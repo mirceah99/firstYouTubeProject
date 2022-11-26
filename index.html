@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Magic draw</title>
+		<script src="https://cdn.jsdelivr.net /npm/handtrackjs@latest /dist/handtrack.min.js"></script>
+
+		<!-- defer specifies that the script is downloaded in parallel to parsing the page, and executed after the page has finished parsing -->
+		<script src="./index.js" defer></script>
+		<link rel="stylesheet" href="style.css" />
+	</head>
+	<body>
+		<button id="start-camera">Start Camera</button>
+		<video id="video" width="320" height="240" autoplay></video>
+		<button id="stop-camera">Stop Camera</button>
+		<canvas id="canvas" width="320" height="240"></canvas>
+		<br />
+		<canvas id="canvas-2" width="320" height="240"></canvas>
+		<br />
+		<button id="process-frame">Process frame</button>
+	</body>
+</html>
