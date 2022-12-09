@@ -1,132 +1,42 @@
-const startCamButton = document.querySelector("#start-camera");
-const stopCamButton = document.querySelector("#stop-camera");
-const processFrameButton = document.querySelector("#process-frame");
-let cameraPreview = document.querySelector("#video");
-let canvas = document.querySelector("#canvas");
-let canvas2 = document.querySelector("#canvas-2");
-let stream = null;
-let interval = null;
-
-//open camera
-startCamButton.addEventListener("click", async function () {
-	// get media stream
-	stream = await navigator.mediaDevices.getUserMedia({
-		video: true,
-		audio: false,
-	});
-
-	// get track
-	cameraPreview.srcObject = stream;
-	// interval = setInterval(processFrame.bind(this, canvas), 100);
-});
-
-//stop camera
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+import { startCamera, closeCamera } from "./camera.js";
+import { renderPredictions, } from "./detectPosition.js";
+const qSel = document.querySelector.bind(document);
+// get HTMLElements
+const startCamButton = qSel("#start-camera");
+const stopCamButton = qSel("#stop-camera");
+const coordFromVideo = qSel("#coord-video-handtrackjs");
+const startDetectionButton = qSel("#start-detection");
+const stopDetectionButton = qSel("#stop-detection");
+const cameraPreview = qSel("#camera-preview");
+const handTjsDetectionsCanvas = qSel("#handTjs-detection");
+const processFrameButton = qSel("#process-frame");
+let interval;
+let stream;
+// handle clicks
+startCamButton.addEventListener("click", () => __awaiter(void 0, void 0, void 0, function* () {
+    stream = yield startCamera(cameraPreview);
+}));
 stopCamButton.addEventListener("click", () => {
-	stream.getTracks().forEach(function (track) {
-		track.stop();
-	});
-	clearInterval(interval);
+    if (stream)
+        closeCamera(stream);
 });
-
-//form image to matrix
-
-// function (canvas) {
-
-//  }
-
-function fromColorToBlackAndWhite(imageArray) {
-	for (i = 0; i < imageArray.length; i += 4 /**R G B + alpha */) {
-		const total = (imageArray[i] + imageArray[i + 1] + imageArray[i + 2]) / 3;
-		imageArray[i] = total;
-		imageArray[i + 1] = total;
-		imageArray[i + 2] = total;
-	}
-}
-
-processFrameButton.addEventListener("click", processFrame.bind(this, canvas));
-
-function processFrame(canvas) {
-	console.log("start interval");
-	canvas
-		.getContext("2d")
-		.drawImage(cameraPreview, 0, 0, canvas.width, canvas.height);
-	const img = canvas
-		.getContext("2d")
-		.getImageData(0, 0, canvas.width, canvas.height);
-
-	fromColorToBlackAndWhite(img.data);
-	applyVerticalEdgeDetection(img.data, canvas.width, canvas.height);
-	canvas.getContext("2d").putImageData(img, 0, 0);
-	// canvas.getContext("2d").putImageData(img, 0, 0);
-}
-
-function applyVerticalEdgeDetection(blackWhiteImageArray, width, height) {
-	console.log("height", height);
-	console.log("width", width);
-	console.log(
-		"total",
-		height * width * 4,
-		"length",
-		blackWhiteImageArray.length
-	);
-
-	const position = (50 * width + 50) * 4;
-	console.log(
-		`blackWhiteImageArray[${position}]`,
-		blackWhiteImageArray[position]
-	);
-	window.blackWhiteImageArray = [...blackWhiteImageArray];
-	const result = new Array(width).fill([]);
-	/* vertical filter
-		-1	0	1
-		-2	0	2
-		-1	0	1
-	*/
-
-	for (i = 1; i < width - 1; i++) {
-		for (j = 1; j < height - 1; j++) {
-			const leftUpperCorner =
-				blackWhiteImageArray[((j - 1) * width + (i - 1)) * 4];
-			const leftMiddle = blackWhiteImageArray[(j * width + (i - 1)) * 4];
-			const leftDown = blackWhiteImageArray[((j + 1) * width + (i - 1)) * 4];
-			const rightUpperCorner =
-				blackWhiteImageArray[((j - 1) * width + (i + 1)) * 4];
-			const rightMiddle = blackWhiteImageArray[(j * width + (i + 1)) * 4];
-			const rightDown = blackWhiteImageArray[((j + 1) * width + (i + 1)) * 4];
-			result[i][j] =
-				(-leftUpperCorner -
-					2 * leftMiddle -
-					leftDown +
-					rightUpperCorner +
-					2 * rightMiddle +
-					rightDown +
-					255 * 4) /
-				8;
-
-			if (j === 120 && i === 120) {
-				console.log("leftUpperCorner", leftUpperCorner);
-				console.log("leftMiddle", leftMiddle);
-				console.log("leftDown", leftDown);
-				console.log("rightUpperCorner", rightUpperCorner);
-				console.log("rightMiddle", rightMiddle);
-				console.log("rightDown", rightDown);
-
-				console.log(`result[${i}][${j}]`, result[i][j]);
-				// console.log(blackWhiteImageArray[i * j]);
-			}
-		}
-	}
-
-	// console.log(result);
-	/* write the response */
-	// for (i = 1; i < width - 1; i++) {
-	// 	for (j = 1; j < height - 1; j++) {
-	// 		const position = (j * width + i) * 4;
-	// 		blackWhiteImageArray[position] = result[i][j];
-	// 		blackWhiteImageArray[position + 1] = result[i][j];
-	// 		blackWhiteImageArray[position + 2] = result[i][j];
-	// 	}
-	// }
-}
-
-handTrack;
+coordFromVideo.addEventListener("click", () => __awaiter(void 0, void 0, void 0, function* () {
+    renderPredictions(cameraPreview, handTjsDetectionsCanvas, handTjsDetectionsCanvas.getContext("2d"), cameraPreview);
+}));
+startDetectionButton.addEventListener("click", () => {
+    interval = setInterval(() => {
+        coordFromVideo.click();
+    }, 100);
+});
+stopDetectionButton.addEventListener("click", () => {
+    clearInterval(interval);
+});
